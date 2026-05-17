@@ -1,0 +1,18 @@
+# LLM + Agents
+google-generativeai
+langchain
+langchain-google-genai
+langgraph
+autogen-agentchat
+autogen-ext
+
+# Search + Web Scraping
+tavily-python
+beautifulsoup4
+requests
+httpx
+
+# Backend API
+fastapi
+python-dotenv
+pydantic
