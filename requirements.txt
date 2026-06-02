@@ -14,5 +14,6 @@ httpx
 
 # Backend API
 fastapi
+uvicorn[standard]
 python-dotenv
 pydantic

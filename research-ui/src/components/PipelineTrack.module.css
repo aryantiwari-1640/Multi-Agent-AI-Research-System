@@ -1,0 +1,149 @@
+.track {
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 1.25rem 2rem 0;
+}
+
+.steps {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  padding-bottom: 1.25rem;
+}
+
+/* ─── Step Wrapper ─── */
+.stepWrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* ─── Dot ─── */
+.dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--border-default);
+  background: var(--bg-raised);
+  color: var(--text-tertiary);
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.dot_running {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.dot_done {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--bg-base);
+}
+
+.dot_error {
+  border-color: var(--danger);
+  background: rgba(226, 75, 74, 0.12);
+  color: var(--danger);
+}
+
+.dotIndex {
+  font-family: var(--ff-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+/* ─── Spinner ─── */
+.spinner {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0, 212, 160, 0.25);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Labels ─── */
+.labelGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+  transition: color 0.25s ease;
+}
+
+.label_running { color: var(--accent); }
+.label_done    { color: var(--text-secondary); }
+.label_error   { color: var(--danger); }
+
+.elapsed {
+  font-family: var(--ff-mono);
+  font-size: 0.62rem;
+  color: var(--text-tertiary);
+}
+
+/* ─── Connector ─── */
+.connector {
+  width: 48px;
+  height: 2px;
+  background: var(--border-subtle);
+  margin: 0 6px;
+  border-radius: 2px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.connectorFill {
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.connectorDone {
+  width: 100%;
+}
+
+.connectorRunning {
+  width: 45%;
+  animation: pulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  from { width: 20%; }
+  to   { width: 70%; }
+}
+
+/* ─── Progress bar ─── */
+.progressBar {
+  height: 2px;
+  background: var(--border-subtle);
+  margin: 0 -2rem;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-dark), var(--accent));
+  border-radius: 0 2px 2px 0;
+  transition: width 0.5s ease;
+}
