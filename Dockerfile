@@ -5,10 +5,10 @@ WORKDIR /app
 # Install uv
 RUN pip install uv
 
-COPY pyproject.toml uv.lock* ./
+COPY requirements.txt .
 
 # Install dependencies using uv
-RUN uv sync
+RUN uv pip install --system -r requirements.txt
 
 COPY . .
 
