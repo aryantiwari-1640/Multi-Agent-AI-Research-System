@@ -1,3 +1,5 @@
+import json
+
 from agents import build_search_agent, build_reader_agent, writer_chain, critic_chain
 
 def extract_agent_text(agent_result: dict) -> str:
@@ -21,65 +23,96 @@ def extract_agent_text(agent_result: dict) -> str:
             return str(content)
     return str(agent_result)
 
+
+def _sse_event(payload: dict) -> str:
+    return f"data:{json.dumps(payload)}\n\n"
+
+
+def stream_research_pipeline(topic: str):
+    """Yield server-sent events for each completed pipeline step."""
+    # Step 1: search
+    yield _sse_event({"type": "step", "index": 0, "status": "running", "output": ""})
+    search_agent = build_search_agent()
+    search_result = search_agent.invoke({
+        "messages": [("user", f"Find recent, reliable and detailed information about :{topic}")]
+    })
+    search_output = extract_agent_text(search_result)
+    yield _sse_event({"type": "step", "index": 0, "status": "done", "output": search_output})
+
+    # Step 2: reader
+    yield _sse_event({"type": "step", "index": 1, "status": "running", "output": ""})
+    reader_agent = build_reader_agent()
+    reader_result = reader_agent.invoke({
+        "messages": [
+            (
+                "user",
+                f"Based on the following search result about '{topic}',"
+                f"pick the most relevant URL and scrapte its depper content.\n\n"
+                f"Search Result:\n{search_output[:800]}"
+            )
+        ]
+    })
+    reader_output = extract_agent_text(reader_result)
+    yield _sse_event({"type": "step", "index": 1, "status": "done", "output": reader_output})
+
+    # Step 3: writer chain
+    yield _sse_event({"type": "step", "index": 2, "status": "running", "output": ""})
+    research_combined = (
+        f"SEARCH RESULTS : \n {search_output}\n\n"
+        f"DETAILED SCRAPPED CONTENT : \n {reader_output}\n\n"
+    )
+    report_output = writer_chain.invoke({
+        "topic": topic,
+        "research": research_combined
+    })
+    yield _sse_event({"type": "step", "index": 2, "status": "done", "output": report_output})
+
+    # Step 4: critic chain
+    yield _sse_event({"type": "step", "index": 3, "status": "running", "output": ""})
+    critic_output = critic_chain.invoke({
+        "report": report_output
+    })
+    yield _sse_event({"type": "step", "index": 3, "status": "done", "output": critic_output})
+
+    yield _sse_event({"type": "complete"})
+
+
 def run_research_pipeline(topic: str)->dict:
 
-    state={}
+    state = {}
 
-    #search agent working
-    print("\n"+"="*20)
-    print("step-1 -search agent working...")
-    print("\n"+"="*20)
-    search_agent=build_search_agent()
-    search_result=search_agent.invoke({
-        "messages":[("user",f"Find recent, reliable and detailed information about :{topic}")]
+    search_agent = build_search_agent()
+    search_result = search_agent.invoke({
+        "messages": [("user", f"Find recent, reliable and detailed information about :{topic}")]
     })
-    
     state["search_result"] = extract_agent_text(search_result)
-    print("\n search result ", state['search_result'])
 
-    #reader agent working
-    print("\n"+"="*20)
-    print("step-1 -reader agent  is scrapping...")
-    print("\n"+"="*20)
-    reader_agent=build_reader_agent()
-    reader_result=reader_agent.invoke({
-        "messages":[("user",f"Based on the following search result about '{topic}',"
-                    f"pick the most relevant URL and scrapte its depper content.\n\n"
-                    f"Search Result:\n{state['search_result'][:800]}"            
-                    )]
+    reader_agent = build_reader_agent()
+    reader_result = reader_agent.invoke({
+        "messages": [
+            (
+                "user",
+                f"Based on the following search result about '{topic}',"
+                f"pick the most relevant URL and scrapte its depper content.\n\n"
+                f"Search Result:\n{state['search_result'][:800]}"
+            )
+        ]
     })
-    state["scrapped_content"]=extract_agent_text(reader_result)
+    state["scrapped_content"] = extract_agent_text(reader_result)
 
-    print("\n scrapped_content ", state['scrapped_content'])
-
-    #step 3 - writer chain
-    print("\n"+"="*20)
-    print("step-3 -writer chain is writing report...")
-    print("\n"+"="*20)
-
-    reasearch_combined=(
+    research_combined = (
         f"SEARCH RESULTS : \n {state['search_result']}\n\n"
         f"DETAILED SCRAPPED CONTENT : \n {state['scrapped_content']}\n\n"
     )
 
-    state["report"]=writer_chain.invoke({
+    state["report"] = writer_chain.invoke({
         "topic": topic,
-        "research": reasearch_combined
+        "research": research_combined
     })
 
-    print("\n Final Report\n", state['report'])
-
-
-    #critic report
-    print("\n"+"="*20)
-    print("step-4 -critic chain is evaluating the report...")
-    print("\n"+"="*20)
-
-    state["feedback"]=critic_chain.invoke({
+    state["feedback"] = critic_chain.invoke({
         "report": state['report']
     })
-
-    print("\n Feedback\n", state['feedback'])
 
     return state
 
