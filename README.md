@@ -45,8 +45,11 @@ pip install -r requirements.txt
 **3. Set up environment variables**
 
 Create a `.env` file:
+
+```env
 GEMINI_API_KEY=your_gemini_key
 TaviliyApiKey=your_tavily_key
+```
 
 **4. Run via terminal**
 ```bash
@@ -55,7 +58,9 @@ python main.py
 
 **5. Run the UI**
 Open research-ui foler in terminal
-npm start
+```bash
+python main.py
+```
 
 ## Live Demo
 
